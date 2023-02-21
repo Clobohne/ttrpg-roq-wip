@@ -7,7 +7,7 @@ import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
 import NumberInputFieldTab from './components/numberInputField/numberInputField';
 
 function App() {
-  const [hitPoints, sethitPoints] = useState(10);
+  const [hitPoints, sethitPoints] = useState(54);
   const [checked, setChecked] = useState(false);
   const [checkedItems, setCheckedItems] = React.useState([false, false])
 
