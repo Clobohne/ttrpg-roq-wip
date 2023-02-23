@@ -9,19 +9,48 @@ import SkillTreePage from './components/SkillTreePage';
 import DiceLog from './components/DiceLog';
 import { parse, format } from 'path';
 
+const message = {
+  "color": 'red',
+  "msg": "test"
+};
+
+const config = {
+  "diceFaceCount": 5,
+  "diceHistory": ['asd', 'das', 'das'],
+  "characters": [
+    {
+      "name": "lol",
+      "class": "paladin",
+      "level": 4,
+    },
+    {
+      "name": "lol2",
+      "class": "warrior",
+      "level": 1,
+    }
+  ]
+}
+
+
 function App() {
   const [hitPoints, sethitPoints] = useState(54);
   const [checked, setChecked] = useState(false);
   const [checkedItems, setCheckedItems] = React.useState([false, false])
 
   // Related to dice mechanics
-  const [diceHistory, setDiceHistory] = useState('');
+  const [diceHistory, setDiceHistory] = useState([message]);
   const [diceFaceCount, setDiceFaceCount] = useState(6);
 
   const allChecked = checkedItems.every(Boolean)
   const isIndeterminate = checkedItems.some(Boolean) && !allChecked
   const damage = 1 * 4;
   const armour = 2;
+
+  const history = [];
+  const listItems = diceHistory.map((item) =>
+    <Text textAlign='left' textColor={item.color}>{item.msg}</Text>
+  );
+
 
   useEffect(() => {
     const calculateHit = () => {
@@ -30,13 +59,33 @@ function App() {
       console.log(checkedItems);
     }
 
+    if (checked) {
+      const result = Math.floor(Math.random() * diceFaceCount);
+      const message = 'Dice result: ' + result.toString() + '\n';
+      let color = "white";
+      if (result === diceFaceCount - 2) {
+        color = "red";
+      }
+      const tempHistory = diceHistory;
+      tempHistory.push({ "color": color, "msg": message });
+      setDiceHistory(tempHistory);
+      setChecked(false);
+    }
 
-  }, [checkedItems, damage, diceFaceCount, diceHistory, hitPoints]);
+
+  }, [checked, checkedItems, damage, diceFaceCount, diceHistory, hitPoints]);
 
   const rollDice = () => {
     const result = Math.floor(Math.random() * diceFaceCount);
     const message = 'Dice result: ' + result.toString() + '\n';
-    setDiceHistory(diceHistory + message);
+    let color = "white";
+    if (result === diceFaceCount - 2) {
+      color = "red";
+    }
+    const tempHistory = diceHistory;
+    tempHistory.push({ "color": color, "msg": message });
+    setDiceHistory(tempHistory);
+    return message;
   }
 
   return (
@@ -85,10 +134,10 @@ function App() {
                 <Divider />
                 <CardFooter>
                   <ButtonGroup spacing='2'>
-                    <Button variant='solid' colorScheme='blue'>
+                    <Button onClick={() => setChecked(true)} variant='solid' colorScheme='blue'>
                       Attack
                     </Button>
-                    <Button variant='ghost' colorScheme='blue'>
+                    <Button onClick={() => setChecked(true)} variant='ghost' colorScheme='blue'>
                       Defend
                     </Button>
                   </ButtonGroup>
@@ -102,11 +151,12 @@ function App() {
         <Divider />
 
 
-        <Box borderRadius='10px' bg='#534D41' height='200px'>
+        <Box borderRadius='10px' bg='#534D41'>
           <Flex color='white'>
-            <Button onClick={rollDice} rightIcon={<Image src='/icons/tabletop/tabletop_39.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='outline'>
+            <Button onClick={() => setChecked(true)} rightIcon={<Image src='/icons/tabletop/tabletop_39.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='outline'>
               Roll Dice
             </Button>
+            <IconButton aria-label='Search database' colorScheme='#F0CEA0' icon={<Image src='/icons/tabletop/tabletop_105.png' boxSize='32px' />} />
             <Center>
               Dice Face Count
               <NumberInput defaultValue={6} onChange={(valueString) => setDiceFaceCount(parseInt(valueString))} >
@@ -122,8 +172,8 @@ function App() {
             </Center>
           </Flex>
           <Box borderRadius='10px' bg='##534D41'>
-            <Container>
-              <Text>{diceHistory}</Text>
+            <Container alignItems='left' width='800px'>
+              {listItems}
             </Container>
           </Box>
         </Box>
