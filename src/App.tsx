@@ -34,8 +34,8 @@ function App() {
   }, [checkedItems, damage, diceFaceCount, diceHistory, hitPoints]);
 
   const rollDice = () => {
-    const result = Math.floor(Math.random() * diceFaceCount);
-    const message = 'Dice result: ' + result.toString() + '\n';
+    const result = 1 + Math.floor(Math.random() * diceFaceCount);
+    const message = 'Your ' +  diceFaceCount.toString() + '-sided die rolled: ' + result.toString() + '\n';
     setDiceHistory(diceHistory + message);
   }
 
