@@ -10,7 +10,7 @@ import DiceLog from './components/DiceLog';
 import { parse, format } from 'path';
 
 function App() {
-  const [hitPoints, sethitPoints] = useState(10);
+  const [hitPoints, sethitPoints] = useState(54);
   const [checked, setChecked] = useState(false);
   const [checkedItems, setCheckedItems] = React.useState([false, false])
 
