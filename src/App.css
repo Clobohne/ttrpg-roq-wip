@@ -1,5 +1,9 @@
-.App {
+.app {
   text-align: center;
+  background-color: blanchedalmond;
+  width: 800px;
+  height: 800px;
+  border-radius: 5px;
 }
 
 .App-logo {
@@ -13,15 +17,16 @@
   }
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+.app-header {
+  background-color: #58595b;
+  height: 50px;
+  width: 100%;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+.app-footer{
+
 }
 
 .App-link {
