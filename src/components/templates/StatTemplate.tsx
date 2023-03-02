@@ -1,5 +1,4 @@
-import { Flex, Center, Square, Box, Text, Grid, GridItem, Spacer, Button, ButtonGroup, Heading, Checkbox, Input, HStack, useNumberInput } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import { Flex, Center, Box, Text, Button, Input, HStack, useNumberInput } from '@chakra-ui/react';
 
 type StatProperties = {
     name: string;

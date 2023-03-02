@@ -1,6 +1,4 @@
 import { Flex, Center, Square, Box, Text, Grid, GridItem, Spacer, Button, ButtonGroup, Heading, Checkbox, Input } from '@chakra-ui/react';
-import React, { useState } from 'react';
-
 
 function LayoutTemplate() {
 

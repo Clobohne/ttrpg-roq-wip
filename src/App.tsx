@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { Card, CardBody, CardFooter, Container, Divider, Flex, Heading, IconButton, Image, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, useControllableState } from '@chakra-ui/react'
+import { Card, CardBody, CardFooter, Container, Divider, Flex, Heading, IconButton, Image, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from '@chakra-ui/react'
 import { Box, Button, ButtonGroup, Center, Stack, Text } from '@chakra-ui/react'
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
-import { Checkbox, CheckboxGroup } from '@chakra-ui/react'
-import CharacterPage from './components/CharacterPage';
-import SkillTreePage from './components/SkillTreePage';
-import DiceLog from './components/DiceLog';
-import { parse, format } from 'path';
 import LayoutTemplate from './components/templates/LayoutTemplate';
 import CharacterSheetTemplate from './components/templates/CharacterSheetTemplate';
 
@@ -32,6 +27,7 @@ const config = {
     }
   ]
 }
+console.log(config)
 
 
 function App() {
@@ -48,7 +44,10 @@ function App() {
   const damage = 1 * 4;
   const armour = 2;
 
-  const history = [];
+  const history: never[] = [];
+  console.log(history);
+  console.log(isIndeterminate);
+  console.log(setCheckedItems);
   const listItems = diceHistory.map((item) =>
     <Text textAlign='left' textColor={item.color}>{item.msg}</Text>
   );
@@ -72,6 +71,7 @@ function App() {
       tempHistory.push({ "color": color, "msg": message });
       setDiceHistory(tempHistory);
       setChecked(false);
+      calculateHit();
     }
 
 
@@ -89,6 +89,7 @@ function App() {
     setDiceHistory(tempHistory);
     return message;
   }
+  rollDice();
 
   return (
     <Center marginTop='25px'>
