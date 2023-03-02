@@ -8,6 +8,8 @@ import CharacterPage from './components/CharacterPage';
 import SkillTreePage from './components/SkillTreePage';
 import DiceLog from './components/DiceLog';
 import { parse, format } from 'path';
+import LayoutTemplate from './components/templates/LayoutTemplate';
+import CharacterSheetTemplate from './components/templates/CharacterSheetTemplate';
 
 const message = {
   "color": 'red',
@@ -96,15 +98,19 @@ function App() {
             <Tab>Character</Tab>
             <Tab>Skilltree</Tab>
             <Tab>Template</Tab>
+            <Tab>Template Layout</Tab>
+            <Tab>Template Character Sheet</Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel>
               <p>one!</p>
             </TabPanel>
+
             <TabPanel>
               <p>two!</p>
             </TabPanel>
+
             <TabPanel>
               <Stack direction='row' spacing={4}>
                 <Button leftIcon={<Image src='/icons/rpg-pixel-art/book_01a.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='solid'>
@@ -143,6 +149,17 @@ function App() {
                   </ButtonGroup>
                 </CardFooter>
               </Card>
+            </TabPanel>
+
+
+            <TabPanel>
+              <LayoutTemplate />
+            </TabPanel>
+
+            <TabPanel>
+              <Center>
+                <CharacterSheetTemplate />
+              </Center>
             </TabPanel>
           </TabPanels>
         </Tabs>

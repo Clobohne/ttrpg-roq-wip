@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import './CharacterPage.css';
 import { Box, Divider, Flex, Heading } from '@chakra-ui/react'
 
 function CharacterPage() {
