@@ -1,99 +1,122 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { Card, CardBody, CardFooter, Container, Divider, Flex, Heading, IconButton, Image, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper } from '@chakra-ui/react'
-import { Box, Button, ButtonGroup, Center, Stack, Text } from '@chakra-ui/react'
-import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react';
-import LayoutTemplate from './components/templates/LayoutTemplate';
-import CharacterSheetTemplate from './components/templates/CharacterSheetTemplate';
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  Center,
+  Divider,
+  Flex,
+  Heading,
+  IconButton,
+  Image,
+  NumberDecrementStepper,
+  NumberIncrementStepper,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  Container,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+} from '@chakra-ui/react';
 
 const message = {
-  "color": 'red',
-  "msg": "test"
+  color: 'red',
+  msg: 'test',
 };
 
 const config = {
-  "diceFaceCount": 5,
-  "diceHistory": ['asd', 'das', 'das'],
-  "characters": [
+  diceFaceCount: 5,
+  diceHistory: ['asd', 'das', 'das'],
+  characters: [
     {
-      "name": "lol",
-      "class": "paladin",
-      "level": 4,
+      name: 'lol',
+      class: 'paladin',
+      level: 4,
     },
     {
-      "name": "lol2",
-      "class": "warrior",
-      "level": 1,
-    }
-  ]
-}
-console.log(config)
-
+      name: 'lol2',
+      class: 'warrior',
+      level: 1,
+    },
+  ],
+};
+// console.log(config)
 
 function App() {
   const [hitPoints, sethitPoints] = useState(54);
   const [checked, setChecked] = useState(false);
-  const [checkedItems, setCheckedItems] = React.useState([false, false])
+  const [checkedItems, setCheckedItems] = useState([false, false]);
 
   // Related to dice mechanics
   const [diceHistory, setDiceHistory] = useState([message]);
   const [diceFaceCount, setDiceFaceCount] = useState(6);
 
-  const allChecked = checkedItems.every(Boolean)
-  const isIndeterminate = checkedItems.some(Boolean) && !allChecked
+  const allChecked = checkedItems.every(Boolean);
+  const isIndeterminate = checkedItems.some(Boolean) && !allChecked;
   const damage = 1 * 4;
   const armour = 2;
 
-  const history: never[] = [];
-  console.log(history);
-  console.log(isIndeterminate);
-  console.log(setCheckedItems);
-  const listItems = diceHistory.map((item) =>
-    <Text textAlign='left' textColor={item.color}>{item.msg}</Text>
-  );
-
+  const history = [];
+  // console.log(history);
+  // console.log(isIndeterminate);
+  // console.log(setCheckedItems);
+  const listItems = diceHistory.map((item) => (
+    <Text textAlign="left" textColor={item.color}>
+      {item.msg}
+    </Text>
+  ));
 
   useEffect(() => {
     const calculateHit = () => {
       let dmg = hitPoints - (damage - armour);
       sethitPoints(dmg);
       console.log(checkedItems);
-    }
+    };
 
     if (checked) {
       const result = Math.floor(Math.random() * diceFaceCount);
       const message = 'Dice result: ' + result.toString() + '\n';
-      let color = "white";
+      let color = 'white';
       if (result === diceFaceCount - 2) {
-        color = "red";
+        color = 'red';
       }
-      const tempHistory = diceHistory;
-      tempHistory.push({ "color": color, "msg": message });
+      const tempHistory = diceHistory.slice();
+      tempHistory.push({ color: color, msg: message });
       setDiceHistory(tempHistory);
       setChecked(false);
       calculateHit();
     }
-
-
   }, [checked, checkedItems, damage, diceFaceCount, diceHistory, hitPoints]);
 
   const rollDice = () => {
     const result = Math.floor(Math.random() * diceFaceCount);
     const message = 'Dice result: ' + result.toString() + '\n';
-    let color = "white";
+    let color = 'white';
     if (result === diceFaceCount - 2) {
-      color = "red";
+      color = 'red';
     }
-    const tempHistory = diceHistory;
-    tempHistory.push({ "color": color, "msg": message });
+    const tempHistory = diceHistory.slice();
+    tempHistory.push({ color: color, msg: message });
     setDiceHistory(tempHistory);
     return message;
-  }
+  };
+
   rollDice();
 
   return (
     <Center marginTop='25px'>
-      <Box borderRadius='10px' bg='#F0CEA0' width='80%'>
+      {/* <Box borderRadius='10px' bg='#F0CEA0' width='80%'>
         <Tabs>
           <TabList>
             <Tab>Character</Tab>
@@ -195,7 +218,7 @@ function App() {
             </Container>
           </Box>
         </Box>
-      </Box >
+      </Box > */}
     </Center>
   );
 }
