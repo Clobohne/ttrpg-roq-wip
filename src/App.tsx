@@ -31,6 +31,7 @@ import {
 } from '@chakra-ui/react';
 import CharacterSheetTemplate from './components/character/CharacterSheetTemplate';
 import LayoutTemplate from './components/character/LayoutTemplate';
+import DisplaySettings from './components/settings/DisplaySettings';
 
 const message = {
   color: 'red',
@@ -126,6 +127,7 @@ function App() {
             <Tab>Template</Tab>
             <Tab>Template Layout</Tab>
             <Tab>Template Character Sheet</Tab>
+            <Tab>Settings</Tab>
           </TabList>
 
           <TabPanels>
@@ -186,6 +188,10 @@ function App() {
               <Center>
                 <CharacterSheetTemplate />
               </Center>
+            </TabPanel>
+
+            <TabPanel>
+              <DisplaySettings />
             </TabPanel>
           </TabPanels>
         </Tabs>
