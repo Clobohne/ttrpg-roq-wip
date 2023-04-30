@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
 
-type SubSettings ={
+type SubSettings = {
     music: boolean;
-}
+};
 
 type Character = {
     name: string;
     stats: Stats;
     // Add more character properties as needed
-}
+};
 
 type Stats = {
     strength: number;
@@ -17,7 +17,7 @@ type Stats = {
     intelligence: number;
     wisdom: number;
     charisma: number;
-}
+};
 
 type Settings = {
     music: boolean;
@@ -37,6 +37,9 @@ const defaultSettings: SettingsContextValue = {
         music: true,
         soundEffects: true,
         difficulty: 'normal',
+        sub: {
+            music: true,
+        },
         // Add more settings as needed
     },
     updateSettings: () => { },

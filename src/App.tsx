@@ -29,6 +29,8 @@ import {
   Tab,
   TabPanel,
 } from '@chakra-ui/react';
+import CharacterSheetTemplate from './components/character/CharacterSheetTemplate';
+import LayoutTemplate from './components/character/LayoutTemplate';
 
 const message = {
   color: 'red',
@@ -112,11 +114,11 @@ function App() {
     return message;
   };
 
-  rollDice();
+  // rollDice();
 
   return (
     <Center marginTop='25px'>
-      {/* <Box borderRadius='10px' bg='#F0CEA0' width='80%'>
+      <Box borderRadius='10px' bg='#F0CEA0' width='80%'>
         <Tabs>
           <TabList>
             <Tab>Character</Tab>
@@ -218,7 +220,7 @@ function App() {
             </Container>
           </Box>
         </Box>
-      </Box > */}
+      </Box >
     </Center>
   );
 }
