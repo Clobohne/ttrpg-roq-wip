@@ -195,11 +195,7 @@ function App() {
             </TabPanel>
           </TabPanels>
         </Tabs>
-
-
         <Divider />
-
-
         <Box borderRadius='10px' bg='#534D41'>
           <Flex color='white'>
             <Button onClick={() => setChecked(true)} rightIcon={<Image src='/icons/tabletop/tabletop_39.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='outline'>
