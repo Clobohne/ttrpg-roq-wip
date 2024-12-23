@@ -12,217 +12,237 @@ import {
   Image,
   NumberDecrementStepper,
   NumberIncrementStepper,
-  Stack,
-  Text,
-} from '@chakra-ui/react';
-import {
-  Card,
-  CardBody,
-  CardFooter,
-  Container,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
+  Stack,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
+  Text,
+  Card,
+  CardBody,
+  CardFooter,
+  Container,
+  Input,
+  Textarea,
 } from '@chakra-ui/react';
-import CharacterSheetTemplate from './components/character/CharacterSheetTemplate';
 import LayoutTemplate from './components/character/LayoutTemplate';
-import DisplaySettings from './components/settings/DisplaySettings';
+import CharacterSheetTemplate from './components/templates/CharacterSheetTemplate';
+import SimplePeer from 'simple-peer';
 
+// Initial Message
 const message = {
   color: 'red',
   msg: 'test',
 };
 
+// Game Configuration
 const config = {
   diceFaceCount: 5,
   diceHistory: ['asd', 'das', 'das'],
   characters: [
-    {
-      name: 'lol',
-      class: 'paladin',
-      level: 4,
-    },
-    {
-      name: 'lol2',
-      class: 'warrior',
-      level: 1,
-    },
+    { name: 'lol', class: 'paladin', level: 4 },
+    { name: 'lol2', class: 'warrior', level: 1 },
   ],
 };
-// console.log(config)
+
+console.log(config);
 
 function App() {
-  const [hitPoints, sethitPoints] = useState(54);
-  const [checked, setChecked] = useState(false);
-  const [checkedItems, setCheckedItems] = useState([false, false]);
-
-  // Related to dice mechanics
+  const [role, setRole] = useState<string | null>(null); // Track user role
+  const [hitPoints, setHitPoints] = useState(54);
   const [diceHistory, setDiceHistory] = useState([message]);
   const [diceFaceCount, setDiceFaceCount] = useState(6);
 
-  const allChecked = checkedItems.every(Boolean);
-  const isIndeterminate = checkedItems.some(Boolean) && !allChecked;
-  const damage = 1 * 4;
-  const armour = 2;
+  const [peer, setPeer] = useState<SimplePeer.Instance | null>(null);
+  const [signalData, setSignalData] = useState<string>(''); // Holds offer/answer data for sharing
+  const [inputSignal, setInputSignal] = useState<string>(''); // Holds input data from the other side
+  const [connected, setConnected] = useState(false); // Connection status
+  const [messages, setMessages] = useState<string[]>([]); // Chat messages
+  const [messageToSend, setMessageToSend] = useState<string>(''); // Message to send
 
-  const history = [];
-  // console.log(history);
-  // console.log(isIndeterminate);
-  // console.log(setCheckedItems);
-  const listItems = diceHistory.map((item) => (
-    <Text textAlign="left" textColor={item.color}>
+  const listItems = diceHistory.map((item, index) => (
+    <Text key={index} textAlign="left" textColor={item.color}>
       {item.msg}
     </Text>
   ));
 
-  useEffect(() => {
-    const calculateHit = () => {
-      let dmg = hitPoints - (damage - armour);
-      sethitPoints(dmg);
-      console.log(checkedItems);
-    };
+  // Manual signaling for Host
+  const startHost = () => {
+    const hostPeer = new SimplePeer({ initiator: true, trickle: false });
+    setPeer(hostPeer);
 
-    if (checked) {
-      const result = Math.floor(Math.random() * diceFaceCount);
-      const message = 'Dice result: ' + result.toString() + '\n';
-      let color = 'white';
-      if (result === diceFaceCount - 2) {
-        color = 'red';
-      }
-      const tempHistory = diceHistory.slice();
-      tempHistory.push({ color: color, msg: message });
-      setDiceHistory(tempHistory);
-      setChecked(false);
-      calculateHit();
-    }
-  }, [checked, checkedItems, damage, diceFaceCount, diceHistory, hitPoints]);
+    hostPeer.on('signal', (data) => {
+      setSignalData(JSON.stringify(data)); // Generate offer
+    });
 
-  const rollDice = () => {
-    const result = Math.floor(Math.random() * diceFaceCount);
-    const message = 'Dice result: ' + result.toString() + '\n';
-    let color = 'white';
-    if (result === diceFaceCount - 2) {
-      color = 'red';
-    }
-    const tempHistory = diceHistory.slice();
-    tempHistory.push({ color: color, msg: message });
-    setDiceHistory(tempHistory);
-    return message;
+    hostPeer.on('connect', () => {
+      setConnected(true);
+    });
+
+    hostPeer.on('data', (data) => {
+      setMessages((prev) => [...prev, `Player: ${data.toString()}`]);
+    });
   };
 
-  // rollDice();
+  // Manual signaling for Player
+  const startPlayer = () => {
+    const playerPeer = new SimplePeer({ initiator: false, trickle: false });
+    setPeer(playerPeer);
+
+    playerPeer.on('signal', (data) => {
+      setSignalData(JSON.stringify(data)); // Generate answer
+    });
+
+    playerPeer.on('connect', () => {
+      setConnected(true);
+    });
+
+    playerPeer.on('data', (data) => {
+      setMessages((prev) => [...prev, `Host: ${data.toString()}`]);
+    });
+
+    // Accept the host's offer
+    if (inputSignal) {
+      playerPeer.signal(JSON.parse(inputSignal));
+    }
+  };
+
+  // Accept signal input
+  const handleSignalInput = () => {
+    if (peer && inputSignal) {
+      peer.signal(JSON.parse(inputSignal));
+    }
+  };
+
+  // Send message
+  const sendMessage = () => {
+    if (peer && connected && messageToSend) {
+      peer.send(messageToSend);
+      setMessages((prev) => [...prev, `You: ${messageToSend}`]);
+      setMessageToSend('');
+    }
+  };
 
   return (
-    <Center marginTop='25px'>
-      <Box borderRadius='10px' bg='#F0CEA0' width='80%'>
-        <Tabs>
-          <TabList>
-            <Tab>Character</Tab>
-            <Tab>Skilltree</Tab>
-            <Tab>Template</Tab>
-            <Tab>Template Layout</Tab>
-            <Tab>Template Character Sheet</Tab>
-            <Tab>Settings</Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <p>one!</p>
-            </TabPanel>
-
-            <TabPanel>
-              <p>two!</p>
-            </TabPanel>
-
-            <TabPanel>
-              <Stack direction='row' spacing={4}>
-                <Button leftIcon={<Image src='/icons/rpg-pixel-art/book_01a.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='solid'>
-                  Magic Book
-                </Button>
-                <Button rightIcon={<Image src='/icons/rpg-pixel-art/book_01a.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='outline'>
-                  Holy Magic
-                </Button>
-                <IconButton aria-label='Search database' colorScheme='#F0CEA0' icon={<Image src='/icons/tabletop/tabletop_105.png' boxSize='32px' />} />
-              </Stack>
-
-              <Card maxW='sm'>
-                <CardBody>
-                  <Image
-                    src='/icons/avatar-mage.png'
-                    alt='Green double couch with wooden legs'
-                    borderRadius='lg'
-                    boxSize='100px'
-                  />
-                  <Stack mt='6' spacing='3'>
-                    <Heading size='md'>Enemy #10</Heading>
-                    <Text>
-                      Description
-                    </Text>
-                  </Stack>
-                </CardBody>
-                <Divider />
-                <CardFooter>
-                  <ButtonGroup spacing='2'>
-                    <Button onClick={() => setChecked(true)} variant='solid' colorScheme='blue'>
-                      Attack
-                    </Button>
-                    <Button onClick={() => setChecked(true)} variant='ghost' colorScheme='blue'>
-                      Defend
-                    </Button>
-                  </ButtonGroup>
-                </CardFooter>
-              </Card>
-            </TabPanel>
-
-
-            <TabPanel>
-              <LayoutTemplate />
-            </TabPanel>
-
-            <TabPanel>
-              <Center>
-                <CharacterSheetTemplate />
-              </Center>
-            </TabPanel>
-
-            <TabPanel>
-              <DisplaySettings />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-        <Divider />
-        <Box borderRadius='10px' bg='#534D41'>
-          <Flex color='white'>
-            <Button onClick={() => setChecked(true)} rightIcon={<Image src='/icons/tabletop/tabletop_39.png' boxSize='32px' />} colorScheme='#F0CEA0' variant='outline'>
-              Roll Dice
+    <Center marginTop="25px">
+      <Box borderRadius="10px" bg="#F0CEA0" width="80%">
+        {role === null ? (
+          <Center>
+            <Button onClick={() => setRole('host')} marginX={2}>
+              Host
             </Button>
-            <IconButton aria-label='Search database' colorScheme='#F0CEA0' icon={<Image src='/icons/tabletop/tabletop_105.png' boxSize='32px' />} />
-            <Center>
-              Dice Face Count
-              <NumberInput defaultValue={6} onChange={(valueString) => setDiceFaceCount(parseInt(valueString))} >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-            </Center>
-            <Center>
+            <Button onClick={() => setRole('player')} marginX={2}>
+              Player
+            </Button>
+          </Center>
+        ) : (
+          <Tabs>
+            <TabList>
+              <Tab>Character</Tab>
+              <Tab>Skilltree</Tab>
+              <Tab>Template</Tab>
+              <Tab>Template Layout</Tab>
+              <Tab>Template Character Sheet</Tab>
+              <Tab>{role === 'host' ? 'Host Panel' : 'Player Panel'}</Tab>
+              <Tab>Chat</Tab>
+            </TabList>
 
-            </Center>
-          </Flex>
-          <Box borderRadius='10px' bg='##534D41'>
-            <Container alignItems='left' width='800px'>
-              {listItems}
-            </Container>
-          </Box>
-        </Box>
-      </Box >
+            <TabPanels>
+              <TabPanel>
+                <Text>Character Info</Text>
+              </TabPanel>
+
+              <TabPanel>
+                <Text>Skilltree Info</Text>
+              </TabPanel>
+
+              <TabPanel>
+                <Stack direction="row" spacing={4}>
+                  <Button leftIcon={<Image src="/icons/rpg-pixel-art/book_01a.png" boxSize="32px" />} colorScheme="#F0CEA0" variant="solid">
+                    Magic Book
+                  </Button>
+                  <Button rightIcon={<Image src="/icons/rpg-pixel-art/book_01a.png" boxSize="32px" />} colorScheme="#F0CEA0" variant="outline">
+                    Holy Magic
+                  </Button>
+                  <IconButton aria-label="Search database" colorScheme="#F0CEA0" icon={<Image src="/icons/tabletop/tabletop_105.png" boxSize="32px" />} />
+                </Stack>
+
+                <Card maxW="sm">
+                  <CardBody>
+                    <Image src="/icons/avatar-mage.png" alt="Character Avatar" borderRadius="lg" boxSize="100px" />
+                    <Stack mt="6" spacing="3">
+                      <Heading size="md">Enemy #10</Heading>
+                      <Text>Description</Text>
+                    </Stack>
+                  </CardBody>
+                  <Divider />
+                  <CardFooter>
+                    <ButtonGroup spacing="2">
+                      <Button onClick={() => setHitPoints(hitPoints - 10)} variant="solid" colorScheme="blue">
+                        Attack
+                      </Button>
+                      <Button onClick={() => setHitPoints(hitPoints + 5)} variant="ghost" colorScheme="blue">
+                        Defend
+                      </Button>
+                    </ButtonGroup>
+                  </CardFooter>
+                </Card>
+              </TabPanel>
+
+              <TabPanel>
+                <LayoutTemplate />
+              </TabPanel>
+
+              <TabPanel>
+                <Center>
+                  <CharacterSheetTemplate />
+                </Center>
+              </TabPanel>
+
+              <TabPanel>
+                {role === 'host' && !peer && <Button onClick={startHost}>Start Hosting</Button>}
+                {role === 'player' && !peer && <Button onClick={startPlayer}>Join as Player</Button>}
+                {peer && (
+                  <Box>
+                    <Text fontWeight="bold">Share this {role === 'host' ? 'offer' : 'answer'}:</Text>
+                    <Textarea value={signalData} readOnly />
+                    <Divider my={4} />
+                    <Text fontWeight="bold">Paste the other side's signal here:</Text>
+                    <Input value={inputSignal} onChange={(e) => setInputSignal(e.target.value)} placeholder="Paste signal data here" />
+                    <Button onClick={handleSignalInput} marginTop={2}>
+                      Submit Signal
+                    </Button>
+                  </Box>
+                )}
+              </TabPanel>
+
+              <TabPanel>
+                {connected ? (
+                  <Box>
+                    <Text fontWeight="bold">Chat:</Text>
+                    <Box borderWidth="1px" padding="10px" borderRadius="md" height="200px" overflowY="scroll">
+                      {messages.map((msg, index) => (
+                        <Text key={index}>{msg}</Text>
+                      ))}
+                    </Box>
+                    <Divider my={4} />
+                    <Input value={messageToSend} onChange={(e) => setMessageToSend(e.target.value)} placeholder="Type a message" />
+                    <Button onClick={sendMessage} marginTop={2}>
+                      Send
+                    </Button>
+                  </Box>
+                ) : (
+                  <Text>Waiting for connection...</Text>
+                )}
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        )}
+      </Box>
     </Center>
   );
 }
