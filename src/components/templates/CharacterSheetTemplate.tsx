@@ -1,5 +1,5 @@
 import { Flex, Center, Box, Text, Spacer, Heading } from '@chakra-ui/react';
-import StatTemplate from './StatTemplate';
+import StatTemplate from '../../components/templates/StatTemplate';
 
 
 function CharacterSheetTemplate() {
@@ -18,7 +18,7 @@ function CharacterSheetTemplate() {
                         <Spacer />
                         <StatTemplate {...{ name: "INT" }} />
                         <Spacer />
-                        <StatTemplate {...{ name: "WIS" }} />
+                        <StatTemplate {...{ name: "SPI" }} />
                         <Spacer />
                         <StatTemplate {...{ name: "CHAR" }} />
                         <Spacer />

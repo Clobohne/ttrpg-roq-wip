@@ -1,13 +1,22 @@
+import { Skill } from "./Iskills";
+
+
+export interface Stat {
+    key: string;
+    amount: number;
+}
+
 /**
  * Base attributes for any character, regardless of type.
  */
 export interface BaseCharacter {
     id: string; // Unique identifier for the character
     name: string; // Name of the character
-    health: number; // Current health points
-    maxHealth: number; // Maximum health points
-    level: number; // Character level
+    health: Stat; // Current health points
+    maxHealth: Stat; // Maximum health points
+    level: Stat; // Character level
     attributes: Attributes; // Core attributes
+    imageUrl: string;
     inventory: InventoryItem[]; // List of inventory items
 }
 
@@ -15,11 +24,12 @@ export interface BaseCharacter {
  * Attributes defining the character's capabilities.
  */
 export interface Attributes {
-    strength: number; // Physical power
-    agility: number; // Speed and dexterity
-    intelligence: number; // Magical or intellectual ability
-    endurance: number; // Stamina and resilience
-    charisma?: number; // Optional: Persuasive or social skill
+    strength: Stat; // Core attribute
+    agility: Stat; // Core attribute
+    intelligence: Stat; // Core attribute
+    endurance: Stat; // Core attribute
+    charisma: Stat; // Optional: Core attribute
+    [key: string]: Stat; // Dynamic attributes
 }
 
 /**
@@ -47,7 +57,7 @@ export interface Buff {
 export enum ItemType {
     Weapon = "Weapon",
     Armor = "Armor",
-    Potion = "Potion",
+    Consumable = "Potion",
     Miscellaneous = "Miscellaneous",
 }
 
@@ -65,34 +75,61 @@ export interface PlayerCharacter extends BaseCharacter {
  */
 export interface NonPlayerCharacter extends BaseCharacter {
     isHostile: boolean; // Whether the NPC is hostile to the player
-    dialogue?: string[]; // Optional list of dialogue lines
-    lootTable?: LootTable; // Optional loot table for items dropped on defeat
 }
 
-/**
- * A skill that a player character can learn or use.
- */
-export interface Skill {
-    id: string; // Unique identifier for the skill
-    name: string; // Name of the skill
-    description: string; // Description of the skill
-    manaCost: number; // Mana cost to use the skill
-    cooldown: number; // Cooldown time in seconds
+
+
+
+// Enum to represent the possible target types for effects
+export enum AffectedTargetType {
+    SELF = 'self',
+    ENEMY = 'enemy',
+    ALLY = 'ally',
+    ANY = 'any',
+  }
+
+  // Interface to represent dice structure with possible default values
+  export interface Dice {
+    amount: number;
+    sides: number;
+    flat: number;
+  }
+  
+export interface Roll {
+    physicalDamage: number;
+    magicalDamage: number;
+    defenceRoll: number;
+    skillCheck: number;
 }
 
-/**
- * Loot table defining the drops for an NPC.
- */
-export interface LootTable {
-    items: LootItem[]; // List of possible loot items
-    gold: number; // Gold dropped by the NPC
-}
+  // Use Record for dynamic boolean flags instead of a massive list of individual boolean properties
+  export type CheckMeForEffectsActive = Record<string, boolean>;
+  
+  // A more detailed and type-safe StatsIncrease interface
+  export interface StatBonus {
+    // MANDATORY
+    // Affects which stats the increase applies to
+    checkMe: CheckMeForEffectsActive;
+  
+    // Array of affected targets and their corresponding amounts
+    affectedTargets: {
+      target: AffectedTargetType; // Type of the target (e.g., self, enemy, etc.)
+      amount: number; // Amount associated with the target (e.g., allyAmount, enemyAmount)
+    }[];
+  
+    // Indicates whether the increase is flat or multiplicative
+    flatOrMultiplicative: 'flat' | 'multiplicative';
+  
 
-/**
- * Individual loot item in a loot table.
- */
-export interface LootItem {
-    itemId: string; // ID corresponding to an inventory item
-    dropChance: number; // Percentage chance to drop
-    quantity: number; // Quantity of the item
-}
+    // OPTIONAL
+    // Dice related to physical and magical effects
+    physicalDice?: Dice;
+    magicalDice?: Dice;
+  
+    // Optional total rolls for different categories (e.g., damage, defense, skill check)
+    totalRoll?: Roll;
+  
+    // Optional field for specific skill checks, such as social or persuasive
+    affectedSkillCheck?: string;
+  }
+  

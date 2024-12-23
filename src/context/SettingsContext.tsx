@@ -32,42 +32,54 @@ export type SettingsContextValue = {
     updateSettings: (newSettings: Partial<Settings>) => void;
 };
 
+// Define the default settings
 const defaultSettings: SettingsContextValue = {
     settings: {
+      music: true,
+      soundEffects: true,
+      difficulty: 'normal',
+      sub: {
         music: true,
-        soundEffects: true,
-        difficulty: 'normal',
-        sub: {
-            music: true,
-        },
-        // Add more settings as needed
+      },
+      // Add more settings as needed
     },
-    updateSettings: () => { },
-};
-
-export const SettingsContext = createContext<SettingsContextValue>(defaultSettings);
-
-type SettingsProviderProps = {
+    updateSettings: () => {},
+  };
+  
+  // Create a context with the default settings
+  export const SettingsContext = createContext<SettingsContextValue>(defaultSettings);
+  
+  // Define the props for the SettingsProvider component
+  type SettingsProviderProps = {
     children: React.ReactNode;
-    // add optional settings prop
+    // Add an optional settings prop
     settings?: Partial<Settings>;
-};
-
-export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children, settings = {} }) => {
+  };
+  
+  // Create the SettingsProvider component
+  export const SettingsProvider: React.FC<SettingsProviderProps> = ({ children, settings = {} }) => {
+    // Set the initial state to the default settings merged with any passed-in settings
     const [currentSettings, setCurrentSettings] = useState<Settings>({
-        ...defaultSettings.settings,
-        ...settings,
+      ...defaultSettings.settings,
+      ...settings,
     });
-
+  
+    // Update the current settings state with new settings
     const updateSettings = (newSettings: Partial<Settings>) => {
-        setCurrentSettings((prevSettings) => ({ ...prevSettings, ...newSettings }));
+      setCurrentSettings((prevSettings) => ({ ...prevSettings, ...newSettings }));
+      // Log when the settings are updated
+      console.log('Settings updated:', currentSettings);
     };
-
+  
+    // Log when the SettingsProvider is rendered
+    console.log('SettingsProvider rendered with settings:', currentSettings);
+  
+    // Return the SettingsContext provider with the current settings and updateSettings function
     return (
-        <SettingsContext.Provider value={{ settings: currentSettings, updateSettings }}>
-            {children}
-        </SettingsContext.Provider>
+      <SettingsContext.Provider value={{ settings: currentSettings, updateSettings }}>
+        {children}
+      </SettingsContext.Provider>
     );
-};
-
-export default SettingsProvider;
+  };
+  
+  export default SettingsProvider;

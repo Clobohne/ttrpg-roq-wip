@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
 import { SettingsContext, SettingsContextValue } from '../../context/SettingsContext';
+import { SelectFieldProps } from '@chakra-ui/react';
+import descriptions from '../../assets/descriptions.json';
 
 const DisplaySettings: React.FC = () => {
     const { settings, updateSettings } = useContext(SettingsContext) as SettingsContextValue;
@@ -11,13 +13,15 @@ const DisplaySettings: React.FC = () => {
     );
 
     const toggleMusic = () => {
-        updateSettings({ music: !settings.music });
+        const newSettings = { music: !settings.music, soundEffects: !settings.soundEffects }
+        updateSettings(newSettings);
     };
 
     return (
         <section>
             <h2>Settings:</h2>
             <ul>
+                {descriptions.title}
                 {renderSetting('Music', settings.music)}
                 {renderSetting('Sound Effects', settings.soundEffects)}
                 <li>Difficulty: {settings.difficulty}</li>

@@ -1,5 +1,5 @@
 import { Flex, Center, Box, Text, Spacer, Heading } from '@chakra-ui/react';
-import StatTemplate from './StatTemplate';
+import StatTemplate from '../templates/StatTemplate';
 
 
 function CharacterSheetTemplate() {
