@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, Input, VStack, Text } from '@chakra-ui/react';
-import SimplePeer, { Instance } from 'simple-peer/simplepeer.min.js';
+import SimplePeer, { Instance } from 'simple-peer'; // Default import with TypeScript support
 import ChatWindow from 'components/pages/ChatWindow';
 
 interface MainApplicationProps {
@@ -22,7 +22,7 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         });
 
         // Generate signal data to share with the other peer
-        newPeer.on('signal', (data: any) => {
+        newPeer.on('signal', (data) => {
             setSignal(JSON.stringify(data));
         });
 
@@ -33,7 +33,7 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         });
 
         // Handle incoming messages
-        newPeer.on('data', (data: { toString: () => any; }) => {
+        newPeer.on('data', (data) => {
             setMessages((prev) => [...prev, `Peer: ${data.toString()}`]);
         });
 
@@ -66,7 +66,6 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
     return (
         <Box height="100vh" display="flex" flexDirection="column">
             <VStack spacing={4} padding={4} flex="1" overflow="auto">
-                {/* Connection Setup */}
                 {!connected ? (
                     <>
                         {role === 'host' ? (
