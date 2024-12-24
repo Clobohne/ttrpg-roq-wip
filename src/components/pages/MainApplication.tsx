@@ -83,22 +83,20 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
                             </>
                         ) : (
                             <>
+                                <Input
+                                    placeholder="Paste host's signal here"
+                                    onChange={(e) => setRemoteSignal(e.target.value)}
+                                    bg="gray.200"
+                                />
                                 {!peer && (
                                     <Button colorScheme="green" onClick={() => initializePeer(false)}>
                                         Join as Player
                                     </Button>
                                 )}
                                 {peer && (
-                                    <>
-                                        <Input
-                                            placeholder="Paste host's signal here"
-                                            onChange={(e) => setRemoteSignal(e.target.value)}
-                                            bg="gray.200"
-                                        />
-                                        <Button colorScheme="green" onClick={connectToPeer}>
-                                            Connect to Host
-                                        </Button>
-                                    </>
+                                    <Button colorScheme="green" onClick={connectToPeer}>
+                                        Connect to Host
+                                    </Button>
                                 )}
                             </>
                         )}
