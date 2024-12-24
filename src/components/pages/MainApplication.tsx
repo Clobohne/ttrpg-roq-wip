@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Box, Button, VStack, Input } from '@chakra-ui/react';
+import { Box, Button, Input, VStack, Text, HStack } from '@chakra-ui/react';
 import SimplePeer, { Instance } from 'simple-peer';
 import ChatWindow from 'components/pages/ChatWindow';
 
@@ -8,14 +8,15 @@ interface MainApplicationProps {
 }
 
 const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
-    const [messages, setMessages] = useState<string[]>([]);
     const [peer, setPeer] = useState<Instance | null>(null);
-    const [signalData, setSignalData] = useState<string>('');
+    const [connected, setConnected] = useState(false);
+    const [messages, setMessages] = useState<string[]>([]);
+    const [signal, setSignal] = useState<string>('');
     const [remoteSignal, setRemoteSignal] = useState<string>('');
 
-    const inputSignalRef = useRef<HTMLInputElement | null>(null);
+    const signalInputRef = useRef<HTMLInputElement | null>(null);
 
-    // Initialize the peer connection
+    // Initialize WebRTC peer connection
     const initializePeer = (initiator: boolean) => {
         const newPeer = new SimplePeer({
             initiator,
@@ -23,10 +24,11 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         });
 
         newPeer.on('signal', (data) => {
-            setSignalData(JSON.stringify(data));
+            setSignal(JSON.stringify(data));
         });
 
         newPeer.on('connect', () => {
+            setConnected(true);
             setMessages((prev) => [...prev, 'Connected to peer!']);
         });
 
@@ -37,9 +39,16 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         setPeer(newPeer);
     };
 
-    // Send a message to the connected peer
+    // Connect to the remote peer using the signal
+    const connectToPeer = () => {
+        if (remoteSignal && peer) {
+            peer.signal(JSON.parse(remoteSignal));
+        }
+    };
+
+    // Send a chat message
     const sendMessage = (message: string) => {
-        if (peer) {
+        if (peer && connected) {
             peer.send(message);
             setMessages((prev) => [...prev, `You: ${message}`]);
         } else {
@@ -47,53 +56,48 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         }
     };
 
-    // Handle receiving the remote signal
-    const handleConnect = () => {
-        if (remoteSignal && peer) {
-            peer.signal(JSON.parse(remoteSignal));
-        }
-    };
-
     return (
-        <Box display="flex" flexDirection="column" height="100vh">
+        <Box height="100vh" display="flex" flexDirection="column">
             <VStack spacing={4} padding={4} flex="1" overflow="auto">
                 {/* Connection Setup */}
-                {role === 'host' ? (
+                {!connected && (
                     <>
-                        <Button colorScheme="blue" onClick={() => initializePeer(true)}>
-                            Start Hosting
-                        </Button>
-                    </>
-                ) : (
-                    <>
-                        <Button colorScheme="green" onClick={() => initializePeer(false)}>
-                            Join as Player
-                        </Button>
+                        {role === 'host' ? (
+                            <>
+                                <Button colorScheme="blue" onClick={() => initializePeer(true)}>
+                                    Start Hosting
+                                </Button>
+                                {signal && (
+                                    <Box>
+                                        <Text fontSize="sm">Share this signal with the player:</Text>
+                                        <Input value={signal} isReadOnly bg="gray.200" />
+                                    </Box>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <Button colorScheme="green" onClick={() => initializePeer(false)}>
+                                    Join as Player
+                                </Button>
+                                {peer && (
+                                    <>
+                                        <Input
+                                            ref={signalInputRef}
+                                            placeholder="Paste host's signal here"
+                                            onChange={(e) => setRemoteSignal(e.target.value)}
+                                            bg="gray.200"
+                                        />
+                                        <Button colorScheme="green" onClick={connectToPeer}>
+                                            Connect to Host
+                                        </Button>
+                                    </>
+                                )}
+                            </>
+                        )}
                     </>
                 )}
 
-                {signalData && (
-                    <Box>
-                        <Input
-                            value={signalData}
-                            isReadOnly
-                            placeholder="Share this signal with the other peer"
-                        />
-                    </Box>
-                )}
-
-                {role === 'player' && (
-                    <>
-                        <Input
-                            ref={inputSignalRef}
-                            placeholder="Paste host signal here"
-                            onChange={(e) => setRemoteSignal(e.target.value)}
-                        />
-                        <Button onClick={handleConnect} colorScheme="green">
-                            Connect to Host
-                        </Button>
-                    </>
-                )}
+                {connected && <Text color="green.500">You are connected to the peer!</Text>}
             </VStack>
 
             {/* Persistent Chat Window */}
