@@ -1,10 +1,6 @@
-import React, { useState } from 'react';
-import { Box, HStack, Button } from '@chakra-ui/react';
-import HostPanel from 'components/pages/HostPanel';
-import PlayerPanel from 'components/pages/PlayerPanel';
-import ChatPanel from 'components/pages/ChatPanel';
-import DiceRoller from 'components/pages/DiceRoller';
-import CharacterSheet from 'components/pages/CharacterSheet';
+import React, { useState, useRef } from 'react';
+import { Box, Button, VStack, Input } from '@chakra-ui/react';
+import SimplePeer, { Instance } from 'simple-peer';
 import ChatWindow from 'components/pages/ChatWindow';
 
 interface MainApplicationProps {
@@ -12,59 +8,99 @@ interface MainApplicationProps {
 }
 
 const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
-    const [activeTabIndex, setActiveTabIndex] = useState<number>(0);
     const [messages, setMessages] = useState<string[]>([]);
+    const [peer, setPeer] = useState<Instance | null>(null);
+    const [signalData, setSignalData] = useState<string>('');
+    const [remoteSignal, setRemoteSignal] = useState<string>('');
 
-    // Tab definitions
-    const tabs = [
-        { label: 'Character', content: <CharacterSheet /> },
-        { label: 'Dice Roller', content: <DiceRoller /> },
-        { label: 'Chat', content: <ChatPanel /> },
-        {
-            label: role === 'host' ? 'Host Panel' : 'Player Panel',
-            content: role === 'host' ? <HostPanel /> : <PlayerPanel />,
-        },
-    ];
+    const inputSignalRef = useRef<HTMLInputElement | null>(null);
 
-    const handleSendMessage = (message: string) => {
-        setMessages((prev) => [...prev, `You: ${message}`]);
+    // Initialize the peer connection
+    const initializePeer = (initiator: boolean) => {
+        const newPeer = new SimplePeer({
+            initiator,
+            trickle: false,
+        });
+
+        newPeer.on('signal', (data) => {
+            setSignalData(JSON.stringify(data));
+        });
+
+        newPeer.on('connect', () => {
+            setMessages((prev) => [...prev, 'Connected to peer!']);
+        });
+
+        newPeer.on('data', (data) => {
+            setMessages((prev) => [...prev, `Peer: ${data.toString()}`]);
+        });
+
+        setPeer(newPeer);
     };
 
-    const handleReceiveMessage = (message: string) => {
-        setMessages((prev) => [...prev, `Other: ${message}`]);
+    // Send a message to the connected peer
+    const sendMessage = (message: string) => {
+        if (peer) {
+            peer.send(message);
+            setMessages((prev) => [...prev, `You: ${message}`]);
+        } else {
+            setMessages((prev) => [...prev, 'Not connected to a peer.']);
+        }
     };
 
-    React.useEffect(() => {
-        // const interval = setInterval(() => {
-        //     handleReceiveMessage('Simulated WebRTC message from MainApplication');
-        // }, 10000);
-
-        // return () => clearInterval(interval);
-    }, []);
+    // Handle receiving the remote signal
+    const handleConnect = () => {
+        if (remoteSignal && peer) {
+            peer.signal(JSON.parse(remoteSignal));
+        }
+    };
 
     return (
-        <Box height="100vh" display="flex" flexDirection="column">
-            {/* Dynamic Navigation */}
-            <HStack spacing={4} padding={4} bg="blue.600" color="white" justifyContent="center">
-                {tabs.map((tab, index) => (
-                    <Button
-                        key={index}
-                        variant={activeTabIndex === index ? 'solid' : 'ghost'}
-                        colorScheme="whiteAlpha"
-                        onClick={() => setActiveTabIndex(index)}
-                    >
-                        {tab.label}
-                    </Button>
-                ))}
-            </HStack>
+        <Box display="flex" flexDirection="column" height="100vh">
+            <VStack spacing={4} padding={4} flex="1" overflow="auto">
+                {/* Connection Setup */}
+                {role === 'host' ? (
+                    <>
+                        <Button colorScheme="blue" onClick={() => initializePeer(true)}>
+                            Start Hosting
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <Button colorScheme="green" onClick={() => initializePeer(false)}>
+                            Join as Player
+                        </Button>
+                    </>
+                )}
 
-            {/* Tab Content */}
-            <Box flex="1" padding={4} overflow="auto">
-                {tabs[activeTabIndex].content}
-            </Box>
+                {signalData && (
+                    <Box>
+                        <Input
+                            value={signalData}
+                            isReadOnly
+                            placeholder="Share this signal with the other peer"
+                        />
+                    </Box>
+                )}
+
+                {role === 'player' && (
+                    <>
+                        <Input
+                            ref={inputSignalRef}
+                            placeholder="Paste host signal here"
+                            onChange={(e) => setRemoteSignal(e.target.value)}
+                        />
+                        <Button onClick={handleConnect} colorScheme="green">
+                            Connect to Host
+                        </Button>
+                    </>
+                )}
+            </VStack>
 
             {/* Persistent Chat Window */}
-            <ChatWindow messages={messages} onSendMessage={handleSendMessage} />
+            <ChatWindow
+                messages={messages}
+                onSendMessage={(message) => sendMessage(message)}
+            />
         </Box>
     );
 };
