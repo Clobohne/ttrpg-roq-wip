@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Input, Textarea, VStack, Text, HStack } from '@chakra-ui/react';
+import { Box, Button, Input, Textarea, VStack, Text, HStack, useToast } from '@chakra-ui/react';
 import SimplePeer from 'simple-peer';
 
 interface MainApplicationProps {
@@ -8,14 +8,16 @@ interface MainApplicationProps {
 }
 
 const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => {
-    const [peer, setPeer] = useState<SimplePeer.Instance | null>(null);
     const [hostSignal, setHostSignal] = useState<string>(''); // Host's generated signal
     const [pastedSignal, setPastedSignal] = useState<string>(''); // Signal pasted by player
     const [playerSignal, setPlayerSignal] = useState<string>(''); // Player's generated signal
+    const [peer, setPeer] = useState<SimplePeer.Instance | null>(null); // Single peer for player
+    const [peers, setPeers] = useState<SimplePeer.Instance[]>([]); // Multiple peers for host
     const [connectionStatus, setConnectionStatus] = useState<string>('Not connected');
     const [messages, setMessages] = useState<string[]>([]);
     const [messageInput, setMessageInput] = useState<string>('');
     const [debugEnabled, setDebugEnabled] = useState<boolean>(false);
+    const toast = useToast();
 
     const logMessage = (message: string) => {
         if (debugEnabled) {
@@ -23,13 +25,28 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
         }
     };
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({
+            title: 'Copied to clipboard!',
+            status: 'success',
+            duration: 2000,
+            isClosable: true,
+        });
+    };
+
     const handleSendMessage = () => {
-        if (!peer || connectionStatus !== 'Connected') {
+        if (!peer && peers.length === 0) {
             logMessage('Error: Not connected to a peer.');
             return;
         }
 
-        peer.send(messageInput);
+        if (role === 'host') {
+            peers.forEach((p) => p.send(messageInput));
+        } else if (peer) {
+            peer.send(messageInput);
+        }
+
         setMessages((prev) => [...prev, `You: ${messageInput}`]);
         setMessageInput('');
     };
@@ -40,19 +57,19 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
         newPeer.on('signal', (signal) => {
             const encodedSignal = btoa(JSON.stringify(signal));
             setHostSignal(encodedSignal);
-            logMessage('Host signal generated. Share this with the player.');
+            logMessage('Host signal generated. Share this with the players.');
         });
 
         newPeer.on('connect', () => {
             setConnectionStatus('Connected');
-            logMessage('Host: Connection established with the player.');
+            logMessage('Host: Connection established with a player.');
         });
 
         newPeer.on('data', (data) => {
             setMessages((prev) => [...prev, `Player: ${data.toString()}`]);
         });
 
-        setPeer(newPeer);
+        setPeers((prev) => [...prev, newPeer]);
     };
 
     const connectToHost = () => {
@@ -61,12 +78,6 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
             return;
         }
 
-        const decodedSignal = JSON.parse(atob(pastedSignal));
-        peer?.signal(decodedSignal);
-        logMessage('Player: Connected to the host signal.');
-    };
-
-    const createPlayerSignal = () => {
         const newPeer = new SimplePeer({ initiator: false, trickle: false });
 
         newPeer.on('signal', (signal) => {
@@ -84,6 +95,9 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
             setMessages((prev) => [...prev, `Host: ${data.toString()}`]);
         });
 
+        const decodedSignal = JSON.parse(atob(pastedSignal));
+        newPeer.signal(decodedSignal);
+
         setPeer(newPeer);
     };
 
@@ -93,7 +107,12 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
                 Generate Host Signal
             </Button>
             {hostSignal && (
-                <Textarea value={hostSignal} isReadOnly placeholder="Host Signal" />
+                <>
+                    <Textarea value={hostSignal} isReadOnly placeholder="Host Signal" />
+                    <Button colorScheme="teal" onClick={() => copyToClipboard(hostSignal)}>
+                        Copy Host Signal
+                    </Button>
+                </>
             )}
         </>
     );
@@ -109,11 +128,13 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
                 Connect to Host
             </Button>
             {playerSignal && (
-                <Textarea value={playerSignal} isReadOnly placeholder="Player Signal" />
+                <>
+                    <Textarea value={playerSignal} isReadOnly placeholder="Player Signal" />
+                    <Button colorScheme="teal" onClick={() => copyToClipboard(playerSignal)}>
+                        Copy Player Signal
+                    </Button>
+                </>
             )}
-            <Button colorScheme="blue" onClick={createPlayerSignal}>
-                Generate Player Signal
-            </Button>
         </>
     );
 
