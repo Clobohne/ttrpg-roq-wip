@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Box, Button, Input, VStack, Text, HStack } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Box, Button, Input, VStack, Text } from '@chakra-ui/react';
 import SimplePeer, { Instance } from 'simple-peer';
 import ChatWindow from 'components/pages/ChatWindow';
 
@@ -13,8 +13,6 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
     const [messages, setMessages] = useState<string[]>([]);
     const [signal, setSignal] = useState<string>('');
     const [remoteSignal, setRemoteSignal] = useState<string>('');
-
-    const signalInputRef = useRef<HTMLInputElement | null>(null);
 
     // Initialize WebRTC peer connection
     const initializePeer = (initiator: boolean) => {
@@ -76,22 +74,20 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
                             </>
                         ) : (
                             <>
-                                <Button colorScheme="green" onClick={() => initializePeer(false)}>
-                                    Join as Player
+                                <Input
+                                    placeholder="Paste host's signal here"
+                                    onChange={(e) => setRemoteSignal(e.target.value)}
+                                    bg="gray.200"
+                                />
+                                <Button
+                                    colorScheme="green"
+                                    onClick={() => {
+                                        if (!peer) initializePeer(false); // Ensure peer is initialized
+                                        connectToPeer();
+                                    }}
+                                >
+                                    Connect to Host
                                 </Button>
-                                {peer && (
-                                    <>
-                                        <Input
-                                            ref={signalInputRef}
-                                            placeholder="Paste host's signal here"
-                                            onChange={(e) => setRemoteSignal(e.target.value)}
-                                            bg="gray.200"
-                                        />
-                                        <Button colorScheme="green" onClick={connectToPeer}>
-                                            Connect to Host
-                                        </Button>
-                                    </>
-                                )}
                             </>
                         )}
                     </>
