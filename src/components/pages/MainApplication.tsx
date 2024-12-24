@@ -65,7 +65,7 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         try {
             logMessage(`Applying remote signal: ${remoteSignal}`);
             peer?.signal(JSON.parse(remoteSignal)); // Apply the remote signal
-        } catch (error: any) {
+        } catch (error) {
             logMessage(`Error applying remote signal: ${error.message}`);
             setMessages((prev) => [...prev, 'Error: Invalid remote signal format.']);
         }
