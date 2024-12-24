@@ -10,6 +10,7 @@ interface MainApplicationProps {
 const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => {
     const [hostSignal, setHostSignal] = useState<string>(''); // Host's generated signal
     const [pastedSignal, setPastedSignal] = useState<string>(''); // Signal pasted by player
+    const [playerSignalInput, setPlayerSignalInput] = useState<string>(''); // Player signal pasted by host
     const [playerSignal, setPlayerSignal] = useState<string>(''); // Player's generated signal
     const [peer, setPeer] = useState<SimplePeer.Instance | null>(null); // Single peer for player
     const [peers, setPeers] = useState<SimplePeer.Instance[]>([]); // Multiple peers for host
@@ -72,6 +73,18 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
         setPeers((prev) => [...prev, newPeer]);
     };
 
+    const connectToPlayer = () => {
+        if (!playerSignalInput) {
+            logMessage('Error: No player signal provided.');
+            return;
+        }
+
+        const newPeer = peers[peers.length - 1]; // Use the most recently created peer
+        const decodedSignal = JSON.parse(atob(playerSignalInput));
+        newPeer.signal(decodedSignal);
+        logMessage('Host: Connected to a player signal.');
+    };
+
     const connectToHost = () => {
         if (!pastedSignal) {
             logMessage('Error: No host signal provided.');
@@ -114,6 +127,14 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
                     </Button>
                 </>
             )}
+            <Textarea
+                placeholder="Paste Player Signal"
+                value={playerSignalInput}
+                onChange={(e) => setPlayerSignalInput(e.target.value)}
+            />
+            <Button colorScheme="green" onClick={connectToPlayer}>
+                Connect to Player
+            </Button>
         </>
     );
 
