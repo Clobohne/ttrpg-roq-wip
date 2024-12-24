@@ -35,9 +35,9 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
     };
 
     React.useEffect(() => {
-        const interval = setInterval(() => {
-            handleReceiveMessage('Simulated WebRTC message from MainApplication');
-        }, 10000);
+        // const interval = setInterval(() => {
+        //     handleReceiveMessage('Simulated WebRTC message from MainApplication');
+        // }, 10000);
 
         // return () => clearInterval(interval);
     }, []);
