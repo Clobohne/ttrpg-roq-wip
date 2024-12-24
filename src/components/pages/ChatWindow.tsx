@@ -3,24 +3,23 @@ import {
     Box,
     Button,
     Input,
-    Stack,
-    Text,
     VStack,
     HStack,
+    Text,
     IconButton,
 } from '@chakra-ui/react';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa'; // Importing from react-icons
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 interface ChatWindowProps {
-    messages: string[]; // Array of messages to display
-    onSendMessage: (message: string) => void; // Function to handle sending messages
+    messages: string[];
+    onSendMessage: (message: string) => void;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
-    const [isVisible, setIsVisible] = useState(true); // Controls visibility
-    const [message, setMessage] = useState<string>(''); // Message input state
+    const [isVisible, setIsVisible] = useState(true);
+    const [message, setMessage] = useState('');
 
-    const handleSendMessage = () => {
+    const handleSend = () => {
         if (message.trim()) {
             onSendMessage(message);
             setMessage('');
@@ -39,7 +38,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
             borderTop="2px solid gray"
             zIndex={10}
         >
-            {/* Toggle Button */}
             <HStack justifyContent="space-between" p={2}>
                 <Text fontWeight="bold">Chat</Text>
                 <IconButton
@@ -50,34 +48,26 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage }) => {
                     colorScheme="whiteAlpha"
                 />
             </HStack>
-
-            {/* Chat Content */}
             {isVisible && (
-                <VStack spacing={2} p={4} maxHeight="200px" overflowY="auto" bg="gray.700">
-                    <Stack spacing={2} align="start" width="100%">
+                <>
+                    <VStack spacing={2} p={4} maxHeight="200px" overflowY="auto" bg="gray.700">
                         {messages.map((msg, index) => (
-                            <Box key={index} bg="gray.600" p={2} borderRadius="md" width="fit-content">
-                                {msg}
-                            </Box>
+                            <Text key={index}>{msg}</Text>
                         ))}
-                    </Stack>
-                </VStack>
-            )}
-
-            {/* Input Box */}
-            {isVisible && (
-                <HStack p={2} bg="gray.800">
-                    <Input
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Type your message..."
-                        bg="gray.700"
-                        color="white"
-                    />
-                    <Button onClick={handleSendMessage} colorScheme="blue">
-                        Send
-                    </Button>
-                </HStack>
+                    </VStack>
+                    <HStack p={2}>
+                        <Input
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Type your message..."
+                            bg="gray.600"
+                            color="white"
+                        />
+                        <Button onClick={handleSend} colorScheme="blue">
+                            Send
+                        </Button>
+                    </HStack>
+                </>
             )}
         </Box>
     );

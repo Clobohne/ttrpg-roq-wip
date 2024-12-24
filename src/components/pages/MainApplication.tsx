@@ -21,15 +21,18 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
             trickle: false,
         });
 
+        // Generate signal data to share with the other peer
         newPeer.on('signal', (data) => {
             setSignal(JSON.stringify(data));
         });
 
+        // Mark the connection as established
         newPeer.on('connect', () => {
             setConnected(true);
             setMessages((prev) => [...prev, 'Connected to peer!']);
         });
 
+        // Handle incoming messages
         newPeer.on('data', (data) => {
             setMessages((prev) => [...prev, `Peer: ${data.toString()}`]);
         });
@@ -37,10 +40,16 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         setPeer(newPeer);
     };
 
-    // Connect to the remote peer using the signal
+    // Apply the remote signal to establish the connection
     const connectToPeer = () => {
-        if (remoteSignal && peer) {
-            peer.signal(JSON.parse(remoteSignal));
+        if (!remoteSignal) {
+            setMessages((prev) => [...prev, 'Error: Remote signal is empty.']);
+            return;
+        }
+        try {
+            peer?.signal(JSON.parse(remoteSignal));
+        } catch (error) {
+            setMessages((prev) => [...prev, 'Error: Invalid remote signal format.']);
         }
     };
 
@@ -58,7 +67,7 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
         <Box height="100vh" display="flex" flexDirection="column">
             <VStack spacing={4} padding={4} flex="1" overflow="auto">
                 {/* Connection Setup */}
-                {!connected && (
+                {!connected ? (
                     <>
                         {role === 'host' ? (
                             <>
@@ -74,26 +83,29 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role }) => {
                             </>
                         ) : (
                             <>
-                                <Input
-                                    placeholder="Paste host's signal here"
-                                    onChange={(e) => setRemoteSignal(e.target.value)}
-                                    bg="gray.200"
-                                />
-                                <Button
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        if (!peer) initializePeer(false); // Ensure peer is initialized
-                                        connectToPeer();
-                                    }}
-                                >
-                                    Connect to Host
-                                </Button>
+                                {!peer && (
+                                    <Button colorScheme="green" onClick={() => initializePeer(false)}>
+                                        Join as Player
+                                    </Button>
+                                )}
+                                {peer && (
+                                    <>
+                                        <Input
+                                            placeholder="Paste host's signal here"
+                                            onChange={(e) => setRemoteSignal(e.target.value)}
+                                            bg="gray.200"
+                                        />
+                                        <Button colorScheme="green" onClick={connectToPeer}>
+                                            Connect to Host
+                                        </Button>
+                                    </>
+                                )}
                             </>
                         )}
                     </>
+                ) : (
+                    <Text color="green.500">You are connected to the peer!</Text>
                 )}
-
-                {connected && <Text color="green.500">You are connected to the peer!</Text>}
             </VStack>
 
             {/* Persistent Chat Window */}
