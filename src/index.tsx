@@ -5,6 +5,9 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ChakraProvider } from '@chakra-ui/react';
 import SettingsProvider from './context/SettingsContext';
+import process from 'process';
+window.process = process;
+
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
