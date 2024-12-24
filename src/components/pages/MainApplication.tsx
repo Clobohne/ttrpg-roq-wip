@@ -9,8 +9,9 @@ interface MainApplicationProps {
 
 const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => {
     const [peer, setPeer] = useState<SimplePeer.Instance | null>(null);
-    const [hostSignal, setHostSignal] = useState<string>('');
-    const [playerSignal, setPlayerSignal] = useState<string>('');
+    const [hostSignal, setHostSignal] = useState<string>(''); // Host's generated signal
+    const [pastedSignal, setPastedSignal] = useState<string>(''); // Signal pasted by player
+    const [playerSignal, setPlayerSignal] = useState<string>(''); // Player's generated signal
     const [connectionStatus, setConnectionStatus] = useState<string>('Not connected');
     const [messages, setMessages] = useState<string[]>([]);
     const [messageInput, setMessageInput] = useState<string>('');
@@ -55,12 +56,12 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
     };
 
     const connectToHost = () => {
-        if (!playerSignal) {
-            logMessage('Error: Player signal is empty.');
+        if (!pastedSignal) {
+            logMessage('Error: No host signal provided.');
             return;
         }
 
-        const decodedSignal = JSON.parse(atob(playerSignal));
+        const decodedSignal = JSON.parse(atob(pastedSignal));
         peer?.signal(decodedSignal);
         logMessage('Player: Connected to the host signal.');
     };
@@ -101,8 +102,8 @@ const MainApplication: React.FC<MainApplicationProps> = ({ role, onLogout }) => 
         <>
             <Textarea
                 placeholder="Paste Host Signal"
-                value={hostSignal}
-                onChange={(e) => setHostSignal(e.target.value)}
+                value={pastedSignal}
+                onChange={(e) => setPastedSignal(e.target.value)}
             />
             <Button colorScheme="green" onClick={connectToHost}>
                 Connect to Host
